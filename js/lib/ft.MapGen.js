@@ -16,7 +16,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 	 *
 	 * @author  Chris & John Rittelmeyer
 	 */
-	ft.DungeonGen = (function() {
+	ft.MapGen = (function() {
 		//other settings or important information such as counts, URLs, Paths, etc..
 		var _settings = {
 			/**
@@ -35,25 +35,6 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			 * @type {Array}
 			 */
 			directions: ['u', 'r', 'd', 'l'],
-
-			/**
-			 * Represents our "digger" who procedurally "digs" out our map
-			 * 
-			 * @type {Object}
-			 */
-			diggers: null,
-
-			/**
-			 * Maximum number of randomly-spawned diggers
-			 * @type {Number}
-			 */
-			maxDiggers: null,
-
-			/**
-			 * Number of ticks remaining
-			 * @type {Number}
-			 */
-			remainingDiggerTicks: null,
 		};
 
 		/**
@@ -63,45 +44,10 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		 *
 		 * @author  Chris & John Rittelmeyer
 		 */
-		function _init(options, callback) {
+		function _init(mapType, options, callback) {
   		//alias the settings object a level up for easier access
     	s = _settings;
-
-    	s.diggers = [];
-
-    	s.maxDiggers = options.maxDiggers;
-    	s.remainingDiggerTicks = options.diggerTicks;
-
-  		//render dungeon
-      this.Map.init(options.width, options.height, s.tiles.blank);
-
-      //init digger
-      this.Digger.init(this.Map, s.diggers, {
-      	x: options.diggerStartX,
-      	y: options.diggerStartY,
-      	spawnChance: 0.12,
-      	tile: s.tiles.ground
-      }, function() {
-      	_moveDiggers({
-      		maxX: options.height,
-      		maxY: options.width
-      	});
-      });
-
-      if (callback) callback.call(this, this.Map.getMapArray());
-		}
-
-		function _moveDiggers(options) {
-			$.each(s.diggers, function(i, digger) {
-				ft.DungeonGen.Digger.move(s.diggers[i], s.directions[Math.floor(Math.random() * s.directions.length)], options.maxX, options.maxY);
-				ft.DungeonGen.Digger.draw(ft.DungeonGen.Map, s.diggers[i], s.tiles.ground);
-			});
-
-			s.remainingDiggerTicks -= 1;
-
-			if (s.remainingDiggerTicks > 0) {
-				_moveDiggers(options);
-			}
+    	this[mapType.replace(" ", "")].init(options, callback);
 		}
 
 		//expose our public api
@@ -110,7 +56,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		};
 	})();
 
-	ft.DungeonGen.Map = (function() {
+	ft.MapGen.Map = (function() {
 		var _mapArray = null, _getMapArray = function() { return _mapArray; };
 
 		function _init(width, height, tile) {
@@ -134,7 +80,72 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		};
 	})();
 
-	ft.DungeonGen.Digger = (function() {
+	ft.MapGen.SimpleDigger = (function() {
+		/**
+		 * Represents our "diggers" who procedurally "dig" out our map
+		 * @type {Object}
+		 */
+		var _diggers = null;
+
+		/**
+		 * Maximum number of randomly-spawned diggers
+		 * @type {Number}
+		 */
+		var _maxDiggers = null;
+
+		/**
+		 * Number of moves remaining for all of the diggers on the board
+		 * @type {Number}
+		 */
+		var _remainingDiggerTicks = null;
+
+		function _init(options, callback) {
+			var that = this;
+
+			_diggers = [];
+    	_maxDiggers = options.maxDiggers;
+    	_remainingDiggerTicks = options.diggerTicks;
+
+  		//render dungeon
+      ft.MapGen.Map.init(options.width, options.height, s.tiles.blank);
+
+      //init digger
+      this.Digger.init(ft.MapGen.Map, _diggers, {
+      	x: options.diggerStartX,
+      	y: options.diggerStartY,
+      	spawnChance: 0.12,
+      	tile: s.tiles.ground
+      }, function() {
+      	_moveDiggers.call(that, {
+      		maxX: options.height,
+      		maxY: options.width
+      	});
+      });
+
+      if (callback) callback.call(this, ft.MapGen.Map.getMapArray());
+		}
+
+		function _moveDiggers(options) {
+			var that = this; 
+
+			$.each(_diggers, function(i, digger) {
+				that.Digger.move(_diggers[i], s.directions[Math.floor(Math.random() * s.directions.length)], options.maxX, options.maxY);
+				that.Digger.draw(ft.MapGen.Map, _diggers[i], s.tiles.ground);
+			});
+
+			_remainingDiggerTicks -= 1;
+
+			if (_remainingDiggerTicks > 0) {
+				_moveDiggers.call(that, options);
+			}
+		}
+
+		return {
+			init: _init
+		};
+	})();
+
+	ft.MapGen.SimpleDigger.Digger = (function() {
 		function _init(map, diggers, options, callback) {
 			_spawn(diggers, {
 				x: options.x,
@@ -184,5 +195,5 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		}
 	})();
 
-	return ft.DungeonGen;
+	return ft.MapGen;
 });

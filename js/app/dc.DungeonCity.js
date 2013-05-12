@@ -6,7 +6,7 @@
 var dc = dc || {};
 
 
-define(["jquery", "Mustache", "ft.DungeonGen", "ft.Utilities"], function($, Mustache) {
+define(["jquery", "Mustache", "ft.MapGen", "ft.Utilities"], function($, Mustache) {
 	var s;
 
 	/**
@@ -25,6 +25,7 @@ define(["jquery", "Mustache", "ft.DungeonGen", "ft.Utilities"], function($, Must
 
 			elems: {
 				$canvas: $('#canvas'),
+				$select_map_type: $('#select_map_type'),
 				$refresh_map: $('#refresh_map')
 			}
 		};
@@ -34,20 +35,24 @@ define(["jquery", "Mustache", "ft.DungeonGen", "ft.Utilities"], function($, Must
 
 			_bindUIActions();
 
-			_refreshMap();
+			_refreshMap(s.elems.$select_map_type.find('.btn:first').text().trim());
 		}
 
 		function _bindUIActions() {
 			s.elems.$refresh_map.on('click', function() {
-				_refreshMap();
+				_refreshMap(s.elems.$select_map_type.find('.btn:first').text().trim());
+			});
+
+			ft.Utilities.handleDropDown(s.elems.$select_map_type, '.dropdown-menu li a', '.btn:first', true, function(newText) {
+
 			});
 		}
 
-		function _refreshMap() {
+		function _refreshMap(mapType) {
 			ft.Utilities.showLoader(s.elems.$canvas);
 
 			setTimeout(function() {
-				ft.DungeonGen.init({
+				ft.MapGen.init(mapType, {
 	      	width: s.mapWidth, 
 	      	height: s.mapHeight,
 	      	diggerStartX: Math.floor(s.mapHeight / 2),
