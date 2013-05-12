@@ -5,7 +5,6 @@
  */
 var dc = dc || {};
 
-
 define(["jquery", "Mustache", "ft.MapGen", "ft.Utilities"], function($, Mustache) {
 	var s;
 
