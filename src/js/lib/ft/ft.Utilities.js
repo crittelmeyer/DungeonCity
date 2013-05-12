@@ -83,7 +83,7 @@ define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
 	   * --Changes display text & value of drop-down when selection is made, then:<br>
 	   * --Executes callback, if provided.
 	   * 
-	   * @param  {jQuery object}   $parent       Parent of the drop-down.
+	   * @param  {jQuery_object}   $parent       Parent of the drop-down.
 	   * @param  {string}   list_item     CSS selector string of all of the drop-down's list items.
 	   * @param  {string}   action_button CSS selector string of the drop-down's action button.
 	   * @param  {boolean}   addCaret      If true, caret is appended after newly selected text.
