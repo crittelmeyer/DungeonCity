@@ -2,4 +2,4 @@
 css/
 *.sublime-project
 *.sublime-workspace
-.DS-Store
+.DS_Store
