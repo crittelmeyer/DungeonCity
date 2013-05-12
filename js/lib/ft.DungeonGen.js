@@ -20,18 +20,6 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		//other settings or important information such as counts, URLs, Paths, etc..
 		var _settings = {
 			/**
-			 * Width of our map
-			 * @type {Number}
-			 */
-			mapWidth: 120,
-
-			/**
-			 * Height of our map
-			 * @type {Number}
-			 */
-			mapHeight: 30,
-
-			/**
 			 * Stores different types of map tiles
 			 * 
 			 * @type {Object}
@@ -53,32 +41,19 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			 * 
 			 * @type {Object}
 			 */
-			diggers: [],
+			diggers: null,
 
 			/**
 			 * Maximum number of randomly-spawned diggers
 			 * @type {Number}
 			 */
-			maxDiggers: 3,
+			maxDiggers: null,
 
 			/**
 			 * Number of ticks remaining
 			 * @type {Number}
 			 */
-			remainingDiggerTicks: 3000,
-
-			/**
-			 * Cache interesting elements here (buttons, inputs, dialogs, etc..)
-			 * 
-			 * @type {Object}
-			 */
-			elems: {
-				/**
-				 * canvas element to which we render our dungeon
-				 * @type {jQuery Object}
-				 */
-				$canvas: $('#canvas')
-			}
+			remainingDiggerTicks: null,
 		};
 
 		/**
@@ -88,37 +63,44 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		 *
 		 * @author  Chris & John Rittelmeyer
 		 */
-		function _init() {
+		function _init(options, callback) {
   		//alias the settings object a level up for easier access
     	s = _settings;
 
+    	s.diggers = [];
+
+    	s.maxDiggers = options.maxDiggers;
+    	s.remainingDiggerTicks = options.diggerTicks;
+
   		//render dungeon
-      this.Map.init(s.mapWidth, s.mapHeight, s.tiles.blank);
+      this.Map.init(options.width, options.height, s.tiles.blank);
 
       //init digger
       this.Digger.init(this.Map, s.diggers, {
-      	x: Math.floor(s.mapHeight / 2),
-      	y: Math.floor(s.mapWidth / 2),
+      	x: options.diggerStartX,
+      	y: options.diggerStartY,
       	spawnChance: 0.12,
       	tile: s.tiles.ground
       }, function() {
-      	_moveDiggers();
+      	_moveDiggers({
+      		maxX: options.height,
+      		maxY: options.width
+      	});
       });
 
-      //draw map after final modifications to worldMap array
-      this.Map.draw(s.elems.$canvas);
+      if (callback) callback.call(this, this.Map.getMapArray());
 		}
 
-		function _moveDiggers() {
+		function _moveDiggers(options) {
 			$.each(s.diggers, function(i, digger) {
-				ft.DungeonGen.Digger.move(s.diggers[i], s.directions[Math.floor(Math.random() * s.directions.length)]);
+				ft.DungeonGen.Digger.move(s.diggers[i], s.directions[Math.floor(Math.random() * s.directions.length)], options.maxX, options.maxY);
 				ft.DungeonGen.Digger.draw(ft.DungeonGen.Map, s.diggers[i], s.tiles.ground);
 			});
 
 			s.remainingDiggerTicks -= 1;
 
 			if (s.remainingDiggerTicks > 0) {
-				_moveDiggers();
+				_moveDiggers(options);
 			}
 		}
 
@@ -146,20 +128,9 @@ define(["jquery", "Mustache"], function($, Mustache) {
   		});
 		}
 
-		function _draw($canvas) {
-			//clear canvas
-			$canvas.empty();
-
-			//redraw map from worldMap array
-			$.each(_mapArray, function(i, column) {
-				$canvas.append(column.join("") + '<br>');
-			});
-		}
-
 		return {
 			init: _init,
-			getMapArray: _getMapArray,
-			draw: _draw
+			getMapArray: _getMapArray
 		};
 	})();
 
@@ -176,8 +147,8 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			if (callback) callback.call();
 		}
 
-		function _spawn(diggersArray, options) {
-      diggersArray.push({
+		function _spawn(diggers, options) {
+      diggers.push({
       	x: options.x,
       	y: options.y,
       	spawnChance: options.spawnChance
@@ -188,16 +159,16 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			map.getMapArray()[digger.x][digger.y] = tile;
 		}
 
-		function _move(digger, dir) {
+		function _move(digger, dir, maxX, maxY) {
 			switch (dir) {
 				case 'u':
 					if (digger.x > 0) digger.x -= 1;
 					break;
 				case 'r':
-					if (digger.y < s.mapWidth - 1) digger.y += 1;
+					if (digger.y < maxY - 1) digger.y += 1;
 					break;
 				case 'd':
-					if (digger.x < s.mapHeight - 1) digger.x += 1;
+					if (digger.x < maxX - 1) digger.x += 1;
 					break;
 				case 'l':
 					if (digger.y > 0) digger.y -= 1;

@@ -10,12 +10,12 @@ requirejs.config({
   }
 });
 
-require(["jquery", "Mustache", "ft.DungeonGen"], function($, Mustache, ft_DungeonGen) {
+require(["jquery", "Mustache", "app/dc.DungeonCity"], function($, Mustache, dc_DungeonCity) {
   //This function will be called when all the dependencies
   //listed above are loaded. Note that this function could
   //be called before the page is loaded.
   //This callback is optional.
   $(function() {
-    ft_DungeonGen.init();
+    dc_DungeonCity.init();
   });
 });
