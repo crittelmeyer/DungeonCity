@@ -25,7 +25,9 @@ define(["jquery", "Mustache", "jquery.mousewheel", "ft/ft.MapGen", "ft/ft.Utilit
 			elems: {
 				$canvas: $('#canvas'),
 				$select_map_type: $('#select_map_type'),
-				$refresh_map: $('#refresh_map')
+				$refresh_map: $('#refresh_map'),
+				$simple_digger_options: $('#simple_digger_options'),
+				$cellular_automata_options: $('#cellular_automata_options')
 			}
 		};
 
@@ -42,7 +44,10 @@ define(["jquery", "Mustache", "jquery.mousewheel", "ft/ft.MapGen", "ft/ft.Utilit
 				_refreshMap(s.elems.$select_map_type.find('.btn:first').text().trim());
 			});
 
-			ft.Utilities.handleDropDown(s.elems.$select_map_type, '.dropdown-menu li a', '.btn:first', true, function(newText) {});
+			ft.Utilities.handleDropDown(s.elems.$select_map_type, '.dropdown-menu li a', '.btn:first', true, function(newText) {
+				$('.map_type_options').hide();
+				$('#' + newText.toLowerCase().replace(" ", "_") + "_options").show();
+			});
 
 			s.elems.$canvas.on('mousewheel', function(event, delta, deltaX, deltaY) {
 				if (deltaY > 0) _zoomMap('out');
@@ -53,15 +58,28 @@ define(["jquery", "Mustache", "jquery.mousewheel", "ft/ft.MapGen", "ft/ft.Utilit
 		function _refreshMap(mapType) {
 			ft.Utilities.showLoader(s.elems.$canvas);
 
+			var _options;
+
+			switch(mapType) {
+				case 'Simple Digger':
+					_options = {
+		      	diggerStartX: Math.floor(s.mapHeight / 2),
+		      	diggerStartY: Math.floor(s.mapWidth / 2),
+		      	maxDiggers: 3,
+		      	diggerTicks: s.elems.$simple_digger_options.find('.digger_moves').val()
+		    	};
+					break;
+				case 'Cellular Automata':
+					_options = {
+						generations: s.elems.$cellular_automata_options.find('.generations').val()
+					};
+					break;
+			}
 			setTimeout(function() {
-				ft.MapGen.init(mapType, {
-	      	width: s.mapWidth, 
-	      	height: s.mapHeight,
-	      	diggerStartX: Math.floor(s.mapHeight / 2),
-	      	diggerStartY: Math.floor(s.mapWidth / 2),
-	      	maxDiggers: 3,
-	      	diggerTicks: 3000
-	    	}, function(map) {
+				ft.MapGen.init(mapType, $.extend(_options, {
+						width: s.mapWidth, 
+		      	height: s.mapHeight
+		      }), function(map) {
 	    		s.map = map;
 	    		_drawMap();
 
@@ -80,9 +98,9 @@ define(["jquery", "Mustache", "jquery.mousewheel", "ft/ft.MapGen", "ft/ft.Utilit
 			});
 		}
 
-		function _zoomMap(type) {
+		function _zoomMap(dir) {
 			var fontSize = parseInt(s.elems.$canvas.css("font-size"));
-			if (type == 'out') fontSize -= 1;
+			if (dir == 'out') fontSize -= 1;
 			else fontSize += 1;
 			s.elems.$canvas.css({'font-size': fontSize + "px"});
 		}

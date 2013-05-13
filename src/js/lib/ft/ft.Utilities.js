@@ -106,11 +106,16 @@ define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
 	    });
 	  }
 
+	  function _getRandomNum(max) {
+	  	return Math.floor(Math.random() * max)
+	  }
+
 		return {
 			ajaxGet: _ajaxGet,
 			showLoader: _showLoader,
 			hideLoader: _hideLoader,
-			handleDropDown: _handleDropDown
-		}
+			handleDropDown: _handleDropDown,
+			getRandomNum: _getRandomNum
+		};
 	})();
 });
