@@ -1,5 +1,5 @@
 /** 
- * @namespace Holds functionality for brickstream applications and libraries
+ * @namespace Holds functionality for floating tree applications and libraries
  * @requires  Mustache
  * @requires  jQuery
  */
