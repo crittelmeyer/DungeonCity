@@ -5,7 +5,7 @@
  */
 var dc = dc || {};
 
-define(["jquery", "Mustache", "ft.MapGen", "ft.Utilities"], function($, Mustache) {
+define(["jquery", "Mustache", "jquery.mousewheel", "ft/ft.MapGen", "ft/ft.Utilities"], function($, Mustache) {
 	var s;
 
 	/**
@@ -42,8 +42,11 @@ define(["jquery", "Mustache", "ft.MapGen", "ft.Utilities"], function($, Mustache
 				_refreshMap(s.elems.$select_map_type.find('.btn:first').text().trim());
 			});
 
-			ft.Utilities.handleDropDown(s.elems.$select_map_type, '.dropdown-menu li a', '.btn:first', true, function(newText) {
+			ft.Utilities.handleDropDown(s.elems.$select_map_type, '.dropdown-menu li a', '.btn:first', true, function(newText) {});
 
+			s.elems.$canvas.on('mousewheel', function(event, delta, deltaX, deltaY) {
+				if (deltaY > 0) _zoomMap('out');
+				else if (deltaY < 0) _zoomMap('in');
 			});
 		}
 
@@ -75,6 +78,13 @@ define(["jquery", "Mustache", "ft.MapGen", "ft.Utilities"], function($, Mustache
 			$.each(s.map, function(i, column) {
 				s.elems.$canvas.append(column.join("") + '<br>');
 			});
+		}
+
+		function _zoomMap(type) {
+			var fontSize = parseInt(s.elems.$canvas.css("font-size"));
+			if (type == 'out') fontSize -= 1;
+			else fontSize += 1;
+			s.elems.$canvas.css({'font-size': fontSize + "px"});
 		}
 
 		return {
