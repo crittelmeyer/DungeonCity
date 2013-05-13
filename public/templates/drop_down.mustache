@@ -1,0 +1,17 @@
+<div class="btn-group">
+  <a class="{{#typeSettings.isButton}}btn btn-small {{/typeSettings.isButton}}dropdown-toggle" data-toggle="dropdown" href="#">
+    {{#typeSettings.menuText}}{{typeSettings.menuText}}{{/typeSettings.menuText}}
+
+  {{#typeSettings.showSeparator}}
+	</a>
+	<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+	{{/typeSettings.showSeparator}}
+
+    {{#typeSettings.showCaret}}<span class="caret"></span>{{/typeSettings.showCaret}}
+  </a>
+  <ul class="dropdown-menu{{#typeSettings.pullRight}} pull-right{{/typeSettings.pullRight}}">
+  	 {{#typeSettings.listItems.listItem}}
+    <li><a {{#modal}}class="{{modal}}"{{/modal}}href="{{#url}}{{url}}{{/url}}{{^url}}javascript:void(1){{/url}}">{{name}}</a></li>
+  	{{/typeSettings.listItems.listItem}}
+  </ul>
+</div>
