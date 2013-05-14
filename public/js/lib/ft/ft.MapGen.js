@@ -34,7 +34,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			 * array of available movement directions
 			 * @type {Array}
 			 */
-			directions: ['u', 'r', 'd', 'l'],
+			directions: []
 		};
 
 		/**
@@ -147,7 +147,6 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			var that = this;
 
 			_diggers = [];
-    	_maxDiggers = options.maxDiggers;
     	_remainingDiggerTicks = options.diggerTicks;
 
   		//render dungeon
@@ -157,13 +156,15 @@ define(["jquery", "Mustache"], function($, Mustache) {
       this.Digger.init(ft.MapGen.Map, _diggers, {
       	x: options.diggerStartX,
       	y: options.diggerStartY,
-      	spawnChance: 0.12,
       	tile: s.tiles.ground
       }, function() {
       	//initial _moveDiggers call starts digger movement
       	_moveDiggers.call(that, {
       		maxX: options.height,
-      		maxY: options.width
+      		maxY: options.width,
+      		maxDiggers: options.maxDiggers,
+      		spawnChance: options.spawnChance,
+      		tendency: options.tendency
       	});
       });
 
@@ -174,8 +175,49 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		function _moveDiggers(options) {
 			var that = this; 
 
+			//move & draw each digger
 			$.each(_diggers, function(i, digger) {
-				that.Digger.move(_diggers[i], s.directions[ft.Utilities.getRandomNum(s.directions.length)], options.maxX, options.maxY);
+				//roll dice to spawn new digger
+				if (_diggers.length < options.maxDiggers && ft.Utilities.getRandomNum(100) < options.spawnChance) {
+					that.Digger.spawn(_diggers, {
+						x: digger.x,
+						y: digger.y
+					});
+				}
+
+				
+				switch (options.tendency) {
+					case 'Random':
+						s.directions = [{dir: 'N', weight: 25}, {dir: 'E', weight: 25}, {dir: 'S', weight: 25}, {dir: 'W', weight: 25}];
+						break;
+					case 'NE':
+						s.directions = [{dir: 'N', weight: 45}, {dir: 'E', weight: 45}, {dir: 'S', weight: 5}, {dir: 'W', weight: 5}];
+						break;
+					case 'SE':
+						s.directions = [{dir: 'N', weight: 5}, {dir: 'E', weight: 45}, {dir: 'S', weight: 45}, {dir: 'W', weight: 5}];
+						break;
+					case 'SW':
+						s.directions = [{dir: 'N', weight: 5}, {dir: 'E', weight: 5}, {dir: 'S', weight: 45}, {dir: 'W', weight: 45}];
+						break;
+					case 'NW':
+						s.directions = [{dir: 'N', weight: 45}, {dir: 'E', weight: 5}, {dir: 'S', weight: 5}, {dir: 'W', weight: 45}];
+						break;
+					case 'Same Direction':
+						s.directions = [{dir: 'N', weight: 5}, {dir: 'E', weight: 5}, {dir: 'S', weight: 5}, {dir: 'W', weight: 5}];
+
+						if (digger.lastMove) {
+							//increase weight of last move to 85
+							$.each(s.directions, function(i, obj) {
+								if (obj.dir == digger.lastMove) obj.weight = 85;
+							});
+						}
+						break;
+				}
+				var maxRand = ft.Utilities.sumObjectValues(s.directions);
+				var rand = ft.Utilities.getRandomNum(maxRand);
+				var direction = _getDirection(s.directions, rand);
+
+				that.Digger.move(_diggers[i], direction, options.maxX, options.maxY);
 				that.Digger.draw(ft.MapGen.Map, _diggers[i], s.tiles.ground);
 			});
 
@@ -184,6 +226,18 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			if (_remainingDiggerTicks > 0) {
 				_moveDiggers.call(this, options);
 			}
+		}
+
+		function _getDirection(weightedObjects, target) {
+			var direction, min = 0;
+			$.each(weightedObjects, function(i, obj) {
+				if (target >= min && target < (obj.weight + min)) {
+					direction = obj.dir;
+					return false;
+				} else min += obj.weight;
+			});
+
+			return direction;
 		}
 
 		return {
@@ -195,8 +249,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		function _init(map, diggers, options, callback) {
 			_spawn(diggers, {
 				x: options.x,
-				y: options.y,
-				spawnChance: options.spawnChance
+				y: options.y
 			});
 
 			_draw(map, diggers[0], options.tile);
@@ -207,8 +260,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		function _spawn(diggers, options) {
       diggers.push({
       	x: options.x,
-      	y: options.y,
-      	spawnChance: options.spawnChance
+      	y: options.y
       });
 		}
 
@@ -218,19 +270,22 @@ define(["jquery", "Mustache"], function($, Mustache) {
 
 		function _move(digger, dir, maxX, maxY) {
 			switch (dir) {
-				case 'u':
+				case 'N':
 					if (digger.x > 0) digger.x -= 1;
 					break;
-				case 'r':
+				case 'E':
 					if (digger.y < maxY - 1) digger.y += 1;
 					break;
-				case 'd':
+				case 'S':
 					if (digger.x < maxX - 1) digger.x += 1;
 					break;
-				case 'l':
+				case 'W':
 					if (digger.y > 0) digger.y -= 1;
 					break;
 			}
+
+			//store last move
+			digger.lastMove = dir;
 		}
 
 		return {

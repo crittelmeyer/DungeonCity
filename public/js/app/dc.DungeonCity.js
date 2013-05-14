@@ -47,6 +47,8 @@ define(["jquery", "Mustache", "jquery.mousewheel", "ft/ft.MapGen", "ft/ft.Utilit
 				$('#' + newText.toLowerCase().replace(" ", "_") + "_options").show();
 			});
 
+			ft.Utilities.handleDropDown(s.elems.$simple_digger_options.find('.select_tendency'), '.dropdown-menu li a', '.btn:first', true, function(newText) {});
+
 			s.elems.$canvas.on('mousewheel', function(event, delta, deltaX, deltaY) {
 				if (deltaY > 0) _zoomMap('out');
 				else if (deltaY < 0) _zoomMap('in');
@@ -64,8 +66,10 @@ define(["jquery", "Mustache", "jquery.mousewheel", "ft/ft.MapGen", "ft/ft.Utilit
 					_options = {
 		      	diggerStartX: Math.floor(s.mapHeight / 2),
 		      	diggerStartY: Math.floor(s.mapWidth / 2),
-		      	maxDiggers: 3,
-		      	diggerTicks: s.elems.$simple_digger_options.find('.digger_moves').val()
+		      	maxDiggers: s.elems.$simple_digger_options.find('.max_diggers').val(),
+		      	spawnChance: s.elems.$simple_digger_options.find('.spawn_chance').val(),
+		      	diggerTicks: s.elems.$simple_digger_options.find('.digger_moves').val(),
+		      	tendency: s.elems.$simple_digger_options.find('.select_tendency').find('.btn:first').text().trim()
 		    	};
 					break;
 				case 'Cellular Automata':

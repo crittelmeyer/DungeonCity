@@ -110,12 +110,31 @@ define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
 	  	return Math.floor(Math.random() * max);
 	  }
 
+	  function _sumObjectValues(obj) {
+	  	var count = 0;
+
+	  	if (Object.prototype.toString.call(obj) === '[object Array]') {
+	  		$.each(obj, function(i, item) {
+	  			$.each(item, function(key, value) {
+		  			if (typeof value === 'number') count += value;
+		  		});
+	  		});
+	  	} else {
+		  	$.each(obj, function(key, value) {
+		  		if (typeof value === 'number') count += value;
+		  	});
+	  	}
+
+	  	return count;
+	  }
+
 		return {
 			ajaxGet: _ajaxGet,
 			showLoader: _showLoader,
 			hideLoader: _hideLoader,
 			handleDropDown: _handleDropDown,
-			getRandomNum: _getRandomNum
+			getRandomNum: _getRandomNum,
+			sumObjectValues: _sumObjectValues
 		};
 	})();
 });
