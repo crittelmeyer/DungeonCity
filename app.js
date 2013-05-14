@@ -14,7 +14,7 @@ var express = require('express')
 var app = express();
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 80);
+  app.set('port', process.env.PORT || 1337);
   app.set('views', __dirname + '/views');
   app.engine('.html', require('ejs').renderFile);
   app.use(express.favicon());
