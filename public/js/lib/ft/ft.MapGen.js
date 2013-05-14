@@ -86,13 +86,17 @@ define(["jquery", "Mustache"], function($, Mustache) {
   		$.each(_mapArray, function(i, column) {
   			$.each(column, function(j) {
   				column[j] = {
-  					tile: blankTile
+  					tile: blankTile,
+  					x: i,
+  					y: j
   				};
 
   				//populate map randomly with tiles, if specified
   				if (tile && ft.Utilities.getRandomNum(100) < placementChance) {
   					column[j] = {
-  						tile: tile
+  						tile: tile,
+	  					x: i,
+	  					y: j
   					};
   				}
   			});
@@ -298,6 +302,20 @@ define(["jquery", "Mustache"], function($, Mustache) {
 
 	ft.MapGen.CellularAutomata = (function() {
 		var _remainingGenerations = null;
+		
+		var _dx = {
+			'N': 0,
+			'E': 1,
+			'S': 0,
+			'W': -1
+		};
+
+		var _dy = {
+			'N': -1,
+			'E': 0,
+			'S': 1,
+			'W': 0
+		};
 
 		function _init(options, callback) {
 			_remainingGenerations = options.generations;
@@ -314,29 +332,29 @@ define(["jquery", "Mustache"], function($, Mustache) {
 
 		function _nextGen(options) {
 			//set next state for each cell
-			// $.each(ft.MapGen.Map.getMapArray(), function(i, column) {
-			// 	$.each(column, function(j, cell) {
-			// 		//if cell passes the 5/1 rule or the 2/2 rule, it stays/becomes a wall. Otherwise, it stays/becomes blank.
-			// 		ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: (_isTileWithinArea(cell, s.tiles.wall, 5) || _isTileWithinArea(cell, s.tiles.wall, 2, 2)) ? s.tiles.wall : s.tiles.ground });
-			// 	});
-			// });
+			$.each(ft.MapGen.Map.getMapArray(), function(i, column) {
+				$.each(column, function(j, cell) {
+					//if cell passes the 5/1 rule or the 2/2 rule, it stays/becomes a wall. Otherwise, it stays/becomes blank.
+					ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: _getNumAdjacentWithTile(cell, s.tiles.wall, true) >= 5 || _getNumAdjacentWithTile(cell, s.tiles.wall, true, 2) >= 6 ? s.tiles.wall : s.tiles.ground });
+				});
+			});
 
-			// //trade out each cell's tile with its stored nextTile
-			// _swapOutTile();
+			//trade out each cell's tile with its stored nextTile
+			_swapOutTile();
 
-			// //repeat tile swap with slight rule change
-			// if (_remainingGenerations > 1) {
+			//repeat tile swap with slight rule change
+			if (_remainingGenerations > 1) {
 				//set next state for each cell
 				$.each(ft.MapGen.Map.getMapArray(), function(i, column) {
 					$.each(column, function(j, cell) {
 						//if cell passes the 5/1 rule, it stays/becomes a wall. Otherwise, it stays/becomes blank.
-						ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: _isTileWithinAreaSpecifiedNumTimes(i, j, cell, s.tiles.wall, 5) ? s.tiles.wall : s.tiles.ground });
+						ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: _getNumAdjacentWithTile(cell, s.tiles.wall, true) >= 5 ? s.tiles.wall : s.tiles.ground });
 					});
 				});
 
 				//trade out each cell's tile with its stored nextTile
 				_swapOutTile();
-			// }
+			}
 
 			//decrement remaining number of generations to progress through
 			_remainingGenerations -= 1;
@@ -347,54 +365,74 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			}
 		}
 
-		function _isTileWithinAreaSpecifiedNumTimes(x, y, cell, tile, num, steps) {
+		function _getNumAdjacentWithTile(cell, tile, includeOrigin, steps) {
 			if (!steps) steps = 1;
-
-			return  (cell.tile == tile && _getNumAdjacentWithType(x, y, tile, steps) >= (num - 1))
-				  			||
-							(cell.tile != tile && _getNumAdjacentWithType(x, y, tile, steps) >= num);
-		}
-
-		function _getNumAdjacentWithType(x, y, type, steps) {
-			if (!steps) steps = 1;
-
 			var _count = 0;
 			var _mapArray = ft.MapGen.Map.getMapArray();
 			
-			if (_mapArray[x][y-steps]) {
-				if (_mapArray[x][y-steps].tile == type) _count++;
+			if (includeOrigin && cell.tile == tile) _count++;
+
+			// console.log('checking location exists north of ' + cell.x + ',' + cell.y);
+			// if (_locationExists(_mapArray, _getNeighborCell(_mapArray, cell, 'N', steps))) {
+			// 	console.log('does exist');
+			// 	console.log(_getNeighborCell(cell, 'N', steps));
+			// 	if (_getNeighborCell(cell, 'N', steps).tile == tile) _count++;
+			// } else {
+			// 	console.log('doesnt exist');
+			// 	_count++;
+			// }
+			
+			if (_mapArray[cell.x][cell.y-steps]) {
+				if (_mapArray[cell.x][cell.y-steps].tile == tile) _count++;
 			} else _count++;
-			if (_mapArray[x][y+steps]) {
-				if (_mapArray[x][y+steps].tile == type) _count++;
+			if (_mapArray[cell.x][cell.y+steps]) {
+				if (_mapArray[cell.x][cell.y+steps].tile == tile) _count++;
 			} else _count++;
-			if (_mapArray[x+steps]) {
-				if (_mapArray[x+steps][y-steps]) {
-					if (_mapArray[x+steps][y-steps].tile == type) _count++;
+			if (_mapArray[cell.x+steps]) {
+				if (_mapArray[cell.x+steps][cell.y-steps]) {
+					if (_mapArray[cell.x+steps][cell.y-steps].tile == tile) _count++;
 				} else _count++;
-				if (_mapArray[x+steps][y]) {
-					if (_mapArray[x+steps][y].tile == type) _count++;
+				if (_mapArray[cell.x+steps][cell.y]) {
+					if (_mapArray[cell.x+steps][cell.y].tile == tile) _count++;
 				} else _count++
-				if (_mapArray[x+steps][y+steps]) {
-					if (_mapArray[x+steps][y+steps].tile == type) _count++;
+				if (_mapArray[cell.x+steps][cell.y+steps]) {
+					if (_mapArray[cell.x+steps][cell.y+steps].tile == tile) _count++;
 				} else _count++;
 			} else {
 				_count += 3;
 			}
-			if (_mapArray[x-steps]) {
-				if (_mapArray[x-steps][y+steps]) {
-					if (_mapArray[x-steps][y+steps].tile == type) _count++;
+			if (_mapArray[cell.x-steps]) {
+				if (_mapArray[cell.x-steps][cell.y+steps]) {
+					if (_mapArray[cell.x-steps][cell.y+steps].tile == tile) _count++;
 				} else _count++;
-				if (_mapArray[x-steps][y]) {
-					if (_mapArray[x-steps][y].tile == type) _count++;
+				if (_mapArray[cell.x-steps][cell.y]) {
+					if (_mapArray[cell.x-steps][cell.y].tile == tile) _count++;
 				} else _count++;
-				if (_mapArray[x-steps][y-steps]) {
-					if (_mapArray[x-steps][y-steps].tile == type) _count++;
+				if (_mapArray[cell.x-steps][cell.y-steps]) {
+					if (_mapArray[cell.x-steps][cell.y-steps].tile == tile) _count++;
 				} else _count++;
 			} else {
 				_count +=3;
 			}
 
 			return _count;
+		}
+
+		function _locationExists(mapArray, coords) {
+			return mapArray[coords.x] && mapArray[coords.x][coords.y];
+		}
+
+		function _getNeighborCell(mapArray, cell, dir, steps) {
+			var offsetX = 0, offsetY = 0;
+			$.each(dir.split(''), function(i, character) {
+				offsetY += (_dx[dir] * steps);
+				offsetX += (_dy[dir] * steps);
+			});
+
+			console.log(dir + ' offsetX is ' + offsetX + ' and offsetY is ' + offsetY);
+
+			if (mapArray[cell.x += offsetX] && mapArray[cell.x += offsetX][cell.y += offsetY]) return mapArray[cell.x += offsetX][cell.y += offsetY];
+			else return { x: cell.x += offsetX, y: cell.y += offsetY };
 		}
 
 		function _swapOutTile() {
