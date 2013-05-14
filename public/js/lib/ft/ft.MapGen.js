@@ -75,7 +75,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		 * 
 		 * @author Chris Rittelmeyer
 		 */
-		function _init(width, height, blankTile, tile) {
+		function _init(width, height, blankTile, tile, placementChance) {
   		//declare and allocate space for map
   		_mapArray = new Array(height);
   		$.each(_mapArray, function(i) {
@@ -90,7 +90,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
   				};
 
   				//populate map randomly with tiles, if specified
-  				if (tile && ft.Utilities.getRandomNum(100) < 45) {
+  				if (tile && ft.Utilities.getRandomNum(100) < placementChance) {
   					column[j] = {
   						tile: tile
   					};
@@ -303,7 +303,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			_remainingGenerations = options.generations;
 
 			//randomly populate map
-			ft.MapGen.Map.init(options.width, options.height, s.tiles.blank, s.tiles.wall);
+			ft.MapGen.Map.init(options.width, options.height, s.tiles.blank, s.tiles.wall, 40);
 			
 			//proceed to next generation
 			_nextGen();
@@ -314,27 +314,29 @@ define(["jquery", "Mustache"], function($, Mustache) {
 
 		function _nextGen(options) {
 			//set next state for each cell
-			$.each(ft.MapGen.Map.getMapArray(), function(i, column) {
-				$.each(column, function(j, cell) {
-					//if cell passes the 4-5 rule, it stays/becomes a wall. Otherwise, it stays/becomes blank.
-					
-					if ((cell.tile == s.tiles.wall && _getNumAdjacentWithType(i, j, s.tiles.wall) >= 4)
-							  ||
-							(cell.tile != s.tiles.wall && _getNumAdjacentWithType(i, j, s.tiles.wall) >= 5)) {
-						ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: s.tiles.wall });
-					} else {
-						ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: s.tiles.ground });
-					}
-				});
-			});
+			// $.each(ft.MapGen.Map.getMapArray(), function(i, column) {
+			// 	$.each(column, function(j, cell) {
+			// 		//if cell passes the 5/1 rule or the 2/2 rule, it stays/becomes a wall. Otherwise, it stays/becomes blank.
+			// 		ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: (_isTileWithinArea(cell, s.tiles.wall, 5) || _isTileWithinArea(cell, s.tiles.wall, 2, 2)) ? s.tiles.wall : s.tiles.ground });
+			// 	});
+			// });
 
-			//trade out each cell's tile with its stored nextTile
-			$.each(ft.MapGen.Map.getMapArray(), function(i, column) {
-				$.each(column, function(j, cell) {
-					ft.MapGen.Map.setMapCellProperty(i, j, { tile: cell.nextTile });
-					delete cell.nextTile;
+			// //trade out each cell's tile with its stored nextTile
+			// _swapOutTile();
+
+			// //repeat tile swap with slight rule change
+			// if (_remainingGenerations > 1) {
+				//set next state for each cell
+				$.each(ft.MapGen.Map.getMapArray(), function(i, column) {
+					$.each(column, function(j, cell) {
+						//if cell passes the 5/1 rule, it stays/becomes a wall. Otherwise, it stays/becomes blank.
+						ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: _isTileWithinAreaSpecifiedNumTimes(i, j, cell, s.tiles.wall, 5) ? s.tiles.wall : s.tiles.ground });
+					});
 				});
-			});
+
+				//trade out each cell's tile with its stored nextTile
+				_swapOutTile();
+			// }
 
 			//decrement remaining number of generations to progress through
 			_remainingGenerations -= 1;
@@ -343,6 +345,14 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			if (_remainingGenerations > 0) {
 				_nextGen.call(this, options);
 			}
+		}
+
+		function _isTileWithinAreaSpecifiedNumTimes(x, y, cell, tile, num, steps) {
+			if (!steps) steps = 1;
+
+			return  (cell.tile == tile && _getNumAdjacentWithType(x, y, tile, steps) >= (num - 1))
+				  			||
+							(cell.tile != tile && _getNumAdjacentWithType(x, y, tile, steps) >= num);
 		}
 
 		function _getNumAdjacentWithType(x, y, type, steps) {
@@ -385,6 +395,15 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			}
 
 			return _count;
+		}
+
+		function _swapOutTile() {
+			$.each(ft.MapGen.Map.getMapArray(), function(i, column) {
+				$.each(column, function(j, cell) {
+					ft.MapGen.Map.setMapCellProperty(i, j, { tile: cell.nextTile });
+					delete cell.nextTile;
+				});
+			});
 		}
 
 		return {
