@@ -25,7 +25,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			 * @type {Object}
 			 */
 			tiles: {
-				ground: '.',
+				ground: ['.', ','],
 				wall: '#',
 				blank: '&nbsp;'
 			},
@@ -34,7 +34,9 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			 * array of available movement directions
 			 * @type {Array}
 			 */
-			directions: []
+			directions: [],
+
+			allDirections: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
 		};
 
 		/**
@@ -222,7 +224,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 				var direction = _getDirection(s.directions, rand);
 
 				that.Digger.move(_diggers[i], direction, options.maxX, options.maxY);
-				that.Digger.draw(ft.MapGen.Map, _diggers[i], s.tiles.ground);
+				that.Digger.draw(ft.MapGen.Map, _diggers[i], s.tiles.ground.random());
 			});
 
 			_remainingDiggerTicks -= 1;
@@ -335,7 +337,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			$.each(ft.MapGen.Map.getMapArray(), function(i, column) {
 				$.each(column, function(j, cell) {
 					//if cell passes the 5/1 rule or the 2/2 rule, it stays/becomes a wall. Otherwise, it stays/becomes blank.
-					ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: _getNumAdjacentWithTile(cell, s.tiles.wall, true) >= 5 || _getNumAdjacentWithTile(cell, s.tiles.wall, true, 2) >= 6 ? s.tiles.wall : s.tiles.ground });
+					ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: _getNumAdjacentWithTile(cell, s.tiles.wall, true) >= 5 || _getNumAdjacentWithTile(cell, s.tiles.wall, true, 2) >= 6 ? s.tiles.wall : s.tiles.ground.random() });
 				});
 			});
 
@@ -348,7 +350,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 				$.each(ft.MapGen.Map.getMapArray(), function(i, column) {
 					$.each(column, function(j, cell) {
 						//if cell passes the 5/1 rule, it stays/becomes a wall. Otherwise, it stays/becomes blank.
-						ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: _getNumAdjacentWithTile(cell, s.tiles.wall, true) >= 5 ? s.tiles.wall : s.tiles.ground });
+						ft.MapGen.Map.setMapCellProperty(i, j, { nextTile: _getNumAdjacentWithTile(cell, s.tiles.wall, true) >= 5 ? s.tiles.wall : s.tiles.ground.random() });
 					});
 				});
 
@@ -372,48 +374,13 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			
 			if (includeOrigin && cell.tile == tile) _count++;
 
-			// console.log('checking location exists north of ' + cell.x + ',' + cell.y);
-			// if (_locationExists(_mapArray, _getNeighborCell(_mapArray, cell, 'N', steps))) {
-			// 	console.log('does exist');
-			// 	console.log(_getNeighborCell(cell, 'N', steps));
-			// 	if (_getNeighborCell(cell, 'N', steps).tile == tile) _count++;
-			// } else {
-			// 	console.log('doesnt exist');
-			// 	_count++;
-			// }
-			
-			if (_mapArray[cell.x][cell.y-steps]) {
-				if (_mapArray[cell.x][cell.y-steps].tile == tile) _count++;
-			} else _count++;
-			if (_mapArray[cell.x][cell.y+steps]) {
-				if (_mapArray[cell.x][cell.y+steps].tile == tile) _count++;
-			} else _count++;
-			if (_mapArray[cell.x+steps]) {
-				if (_mapArray[cell.x+steps][cell.y-steps]) {
-					if (_mapArray[cell.x+steps][cell.y-steps].tile == tile) _count++;
-				} else _count++;
-				if (_mapArray[cell.x+steps][cell.y]) {
-					if (_mapArray[cell.x+steps][cell.y].tile == tile) _count++;
-				} else _count++
-				if (_mapArray[cell.x+steps][cell.y+steps]) {
-					if (_mapArray[cell.x+steps][cell.y+steps].tile == tile) _count++;
-				} else _count++;
-			} else {
-				_count += 3;
-			}
-			if (_mapArray[cell.x-steps]) {
-				if (_mapArray[cell.x-steps][cell.y+steps]) {
-					if (_mapArray[cell.x-steps][cell.y+steps].tile == tile) _count++;
-				} else _count++;
-				if (_mapArray[cell.x-steps][cell.y]) {
-					if (_mapArray[cell.x-steps][cell.y].tile == tile) _count++;
-				} else _count++;
-				if (_mapArray[cell.x-steps][cell.y-steps]) {
-					if (_mapArray[cell.x-steps][cell.y-steps].tile == tile) _count++;
-				} else _count++;
-			} else {
-				_count +=3;
-			}
+			$.each(s.allDirections, function(i, dir) {
+				if (_locationExists(_mapArray, _getNeighborCell(_mapArray, cell, dir, steps))) {
+					if (_getNeighborCell(_mapArray, cell, dir, steps).tile == tile) _count++;
+				} else {
+					_count++;
+				}
+			});
 
 			return _count;
 		}
@@ -425,14 +392,12 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		function _getNeighborCell(mapArray, cell, dir, steps) {
 			var offsetX = 0, offsetY = 0;
 			$.each(dir.split(''), function(i, character) {
-				offsetY += (_dx[dir] * steps);
-				offsetX += (_dy[dir] * steps);
+				offsetX += (_dx[character] * steps);
+				offsetY += (_dy[character] * steps);
 			});
 
-			console.log(dir + ' offsetX is ' + offsetX + ' and offsetY is ' + offsetY);
-
-			if (mapArray[cell.x += offsetX] && mapArray[cell.x += offsetX][cell.y += offsetY]) return mapArray[cell.x += offsetX][cell.y += offsetY];
-			else return { x: cell.x += offsetX, y: cell.y += offsetY };
+			if (mapArray[cell.x + offsetX] && mapArray[cell.x + offsetX][cell.y + offsetY]) return mapArray[cell.x + offsetX][cell.y + offsetY];
+			else return { x: cell.x + offsetX, y: cell.y + offsetY };
 		}
 
 		function _swapOutTile() {

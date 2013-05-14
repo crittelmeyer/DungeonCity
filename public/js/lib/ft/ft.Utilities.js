@@ -138,3 +138,7 @@ define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
 		};
 	})();
 });
+
+Array.prototype.random = function() {
+	return this[ft.Utilities.getRandomNum(this.length)];
+}
