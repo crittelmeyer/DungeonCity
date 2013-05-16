@@ -39,6 +39,20 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			allDirections: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
 		};
 
+		var _dx = {
+			'N': 0,
+			'E': 1,
+			'S': 0,
+			'W': -1
+		};
+
+		var _dy = {
+			'N': -1,
+			'E': 0,
+			'S': 1,
+			'W': 0
+		};
+
 		/**
 		 * Initializes the dungeon
 		 *
@@ -54,7 +68,10 @@ define(["jquery", "Mustache"], function($, Mustache) {
 
 		//expose our public api
 		return {
-			init: _init
+			init: _init,
+			tiles: _settings.tiles,
+			dx: _dx,
+			dy: _dy
 		};
 	})();
 
@@ -175,7 +192,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
       });
 
       //execute callback, if specified
-      if (callback) callback.call(this, ft.MapGen.Map.getFlattenedMap());
+      if (callback) callback.call(this, ft.MapGen.Map);
 		}
 
 		function _moveDiggers(options) {
@@ -190,7 +207,6 @@ define(["jquery", "Mustache"], function($, Mustache) {
 						y: digger.y
 					});
 				}
-
 				
 				switch (options.tendency) {
 					case 'Random':
@@ -304,20 +320,6 @@ define(["jquery", "Mustache"], function($, Mustache) {
 
 	ft.MapGen.CellularAutomata = (function() {
 		var _remainingGenerations = null;
-		
-		var _dx = {
-			'N': 0,
-			'E': 1,
-			'S': 0,
-			'W': -1
-		};
-
-		var _dy = {
-			'N': -1,
-			'E': 0,
-			'S': 1,
-			'W': 0
-		};
 
 		function _init(options, callback) {
 			_remainingGenerations = options.generations;
@@ -329,7 +331,7 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			_nextGen();
 
 			//execute callback, if specified
-			if (callback) callback.call(this, ft.MapGen.Map.getFlattenedMap());
+			if (callback) callback.call(this, ft.MapGen.Map);
 		}
 
 		function _nextGen(options) {
@@ -392,8 +394,8 @@ define(["jquery", "Mustache"], function($, Mustache) {
 		function _getNeighborCell(mapArray, cell, dir, steps) {
 			var offsetX = 0, offsetY = 0;
 			$.each(dir.split(''), function(i, character) {
-				offsetX += (_dx[character] * steps);
-				offsetY += (_dy[character] * steps);
+				offsetX += (ft.MapGen.dx[character] * steps);
+				offsetY += (ft.MapGen.dy[character] * steps);
 			});
 
 			if (mapArray[cell.x + offsetX] && mapArray[cell.x + offsetX][cell.y + offsetY]) return mapArray[cell.x + offsetX][cell.y + offsetY];
@@ -413,6 +415,456 @@ define(["jquery", "Mustache"], function($, Mustache) {
 			init: _init
 		};
 	})();
+
+	ft.MapGen.Uniform = (function() {
+		function _init(options, callback) {
+			var player1 = ft.Entity.Player.init(0, 1);
+			var player2 = ft.Entity.Player.init(2, 3);
+			console.log(player1);
+			console.log(player2);
+		}
+
+		return {
+			init: _init
+		};
+	})();
+
+
+// RPG.Generators.Uniform.prototype.init = function() {
+// 	this.parent();
+	
+// 	this._roomAttempts = 10; /* new room is created N-times until is considered as impossible to generate */
+// 	this._corridorAttempts = 50; /* corridors are tried N-times until the level is considered as impossible to connect */
+// 	this._roomPercentage = 0.1; /* we stop createing rooms after this percentage of level area has been dug out */
+// 	this._minSize = 3; /* minimum room dimension */
+// 	this._maxWidth = 9; /* maximum room width */
+// 	this._maxHeight = 5; /* maximum room height */
+	
+// 	this._connected = []; /* list of already connected rooms */
+// 	this._unconnected = []; /* list of remaining unconnected rooms */
+// }
+
+// RPG.Generators.Uniform.prototype.generate = function(id, size, danger, options) {
+// 	this.parent(id, size, danger, options);
+
+// 	while (1) {
+// 		this._blankMap();
+// 		this._unconnected = [];
+// 		this._generateRooms();
+// 		var result = this._generateCorridors();
+// 		if (result) { return this._convertToMap(id, danger); }
+// 	}
+// }
+
+// RPG.Generators.Uniform.prototype._digRoom = function(c1, c2) {
+// 	var room = this.parent(c1, c2);
+// 	this._unconnected.push(room);
+// }
+
+// /**
+//  * Generates a suitable amount of rooms
+//  */
+// RPG.Generators.Uniform.prototype._generateRooms = function() {
+// 	var w = this._size.x-2;
+// 	var h = this._size.y-2;
+
+// 	do {
+// 		var result = this._generateRoom();
+// 		if (this._dug/(w*h) > this._roomPercentage) { break; } /* achieved requested amount of free space */
+// 	} while (result);
+	
+// 	/* either enough rooms, or not able to generate more of them :) */
+// }
+
+// /**
+//  * Try to generate one room
+//  */
+// RPG.Generators.Uniform.prototype._generateRoom = function() {
+// 	var count = 0;
+// 	while (count < this._roomAttempts) {
+// 		count++;
+		
+// 		/* generate corner */
+// 		var corner1 = this._generateCoords(this._minSize);
+		
+// 		/* generate second corner */
+// 		var corner2 = this._generateSecondCorner(corner1, this._minSize, this._maxWidth, this._maxHeight);
+		
+// 		/* enlarge for fitting */
+// 		corner1.x--;
+// 		corner1.y--;
+// 		corner2.x++;
+// 		corner2.y++;
+		
+// 		/* if not good, skip to next attempt */
+// 		if (!this._freeSpace(corner1, corner2)) { continue; }
+		
+// 		/* shrink */
+// 		corner1.x++;
+// 		corner1.y++;
+// 		corner2.x--;
+// 		corner2.y--;
+// 		this._digRoom(corner1, corner2);
+// 		return true;
+// 	} 
+
+// 	/* no room was generated in a given number of attempts */
+// 	return false;
+// }
+
+// /**
+//  * Generates connectors beween rooms
+//  * @returns {bool} success Was this attempt successfull?
+//  */
+// RPG.Generators.Uniform.prototype._generateCorridors = function() {
+// 	var cnt = 0;
+// 	this._connected = [];
+// 	if (this._unconnected.length) { this._connected.push(this._unconnected.pop()); }
+		
+// 	while (this._unconnected.length) {
+// 		cnt++;
+// 		if (cnt > this._corridorAttempts) { return false; } /* no success */
+		
+// 		var room1 = this._unconnected[0]; /* start with the first unconnected */
+// 		var center = room1.getCenter();
+// 		this._connected.sort(function(a,b){ /* find closest connected */
+// 			return a.getCenter().distance(center) - b.getCenter().distance(center);
+// 		});
+// 		var room2 = this._connected[0];
+
+// 		this._connectRooms(room1, room2); /* connect these two */
+// 	};
+	
+// 	return true;
+// }
+
+// RPG.Generators.Uniform.prototype._connectRooms = function(room1, room2) {
+// 	var center1 = room1.getCenter();
+// 	var center2 = room2.getCenter();
+
+// 	var diffX = center2.x - center1.x;
+// 	var diffY = center2.y - center1.y;
+// 	var prop = "";
+
+// 	if (Math.abs(diffX) < Math.abs(diffY)) { /* first try connecting north-south walls */
+// 		var wall1 = (diffY > 0 ? RPG.S : RPG.N);
+// 		var wall2 = (wall1 + 4) % 8;
+// 		prop = "x";
+// 	} else { /* first try connecting east-west walls */
+// 		var wall1 = (diffX > 0 ? RPG.E : RPG.W);
+// 		var wall2 = (wall1 + 4) % 8;
+// 		prop = "y";
+// 	}
+
+// 	var minorProp = (prop == "x" ? "y" : "x");
+// 	var min = room2.getCorner1()[prop];
+// 	var max = room2.getCorner2()[prop];	
+// 	var start = this._placeInWall(room1, wall1); /* corridor will start here */
+// 	if (!start) { return; }
+
+// 	if (start[prop] >= min && start[prop] <= max) { /* possible to connect with straight line */
+
+// 		var corner = (wall2 == RPG.N || wall2 == RPG.W ? room2.getCorner1() : room2.getCorner2());
+// 		var x = (prop == "x" ? start[prop] : corner.x);
+// 		var y = (prop == "y" ? start[prop] : corner.y);
+// 		var end = new RPG.Misc.Coords(x, y);
+// 		return this._digLine([start, end]);
+		
+// 	} else if (start[prop] < min-1 || start[prop] > max+1) { /* need to switch target wall (L-like) */
+		
+// 		var diff = start[prop] - center2[prop];
+// 		switch (wall2) {
+// 			case RPG.N:
+// 			case RPG.E:	var rotation = (diff < 0 ? 6 : 2); break;
+// 			break;
+// 			case RPG.S:
+// 			case RPG.W:	var rotation = (diff < 0 ? 2 : 6); break;
+// 			break;
+// 		}
+// 		wall2 = (wall2 + rotation) % 8;
+		
+// 		var end = this._placeInWall(room2, wall2);
+// 		if (!end) { return; }
+// 		var mid = new RPG.Misc.Coords(0, 0);
+// 		mid[prop] = start[prop];
+// 		mid[minorProp] = end[minorProp];
+// 		return this._digLine([start, mid, end]);
+		
+// 	} else { /* use current wall pair, but adjust the line in the middle (snake-like) */
+	
+// 		var end = this._placeInWall(room2, wall2);
+// 		if (!end) { return; }
+// 		var mid = Math.round((end[minorProp] + start[minorProp])/2);
+
+// 		var mid1 = new RPG.Misc.Coords(0, 0);
+// 		var mid2 = new RPG.Misc.Coords(0, 0);
+// 		mid1[prop] = start[prop];
+// 		mid1[minorProp] = mid;
+// 		mid2[prop] = end[prop];
+// 		mid2[minorProp] = mid;
+// 		return this._digLine([start, mid1, mid2, end]);
+
+// 	}
+// }
+
+// RPG.Generators.Uniform.prototype._placeInWall = function(room, wall) {
+// 	var prop = "";
+// 	var c1 = room.getCorner1();
+// 	var c2 = room.getCorner2();
+// 	var x = 0;
+// 	var y = 0;
+// 	switch (wall) {
+// 		case RPG.N:
+// 			y = c1.y-1;
+// 			x = c1.x + Math.floor(Math.random() * (c2.x-c1.x));
+// 			prop = "x";
+// 		break;
+// 		case RPG.S:
+// 			y = c2.y+1;
+// 			x = c1.x + Math.floor(Math.random() * (c2.x-c1.x));
+// 			prop = "x";
+// 		break;
+// 		case RPG.W:
+// 			x = c1.x-1;
+// 			y = c1.y + Math.floor(Math.random() * (c2.y-c1.y));
+// 			prop = "y";
+// 		break;
+// 		case RPG.E:
+// 			x = c2.x+1;
+// 			y = c1.y + Math.floor(Math.random() * (c2.y-c1.y));
+// 			prop = "y";
+// 		break;
+// 	}
+	
+// 	var result = new RPG.Misc.Coords(x, y);
+// 	/* check if neighbors are not empty */
+// 	result[prop] -= 1;
+// 	if (this._isValid(result) && !this._boolArray[result.x][result.y]) { return null; }
+// 	result[prop] += 2;
+// 	if (this._isValid(result) && !this._boolArray[result.x][result.y]) { return null; }
+// 	result[prop] -= 1;
+
+// 	return result; 
+	
+// }
+
+// /**
+//  * Try to dig a polyline. Stop if it crosses any room more than two times.
+//  */
+// RPG.Generators.Uniform.prototype._digLine = function(points) {
+// 	var todo = [];
+// 	var rooms = []; /* rooms crossed with this line */
+	
+// 	var check = function(coords) {
+// 		todo.push(coords.clone());
+// 		rooms = rooms.concat(this._roomsWithWall(coords));
+// 	}
+	
+// 	/* compute and check all coords on this polyline */
+// 	var current = points.shift();
+// 	while (points.length) {
+// 		var target = points.shift();
+// 		var diffX = target.x - current.x;
+// 		var diffY = target.y - current.y;
+// 		var length = Math.max(Math.abs(diffX), Math.abs(diffY));
+// 		var stepX = Math.round(diffX / length);
+// 		var stepY = Math.round(diffY / length);
+// 		for (var i=0;i<length;i++) {
+// 			check.call(this, current);
+// 			current.x += stepX;
+// 			current.y += stepY;
+// 		}
+// 	}
+// 	check.call(this, current);
+	
+// 	/* any room violated? */
+// 	var connected = [];
+// 	while (rooms.length) {
+// 		var room = rooms.pop();
+// 		connected.push(room);
+// 		var count = 1;
+// 		for (var i=rooms.length-1; i>=0; i--) {
+// 			if (rooms[i] == room) {
+// 				rooms.splice(i, 1);
+// 				count++;
+// 			}
+// 		}
+// 		if (count > 2) { return; } /* room crossed too many times */
+// 	}
+	
+// 	/* mark encountered rooms as connected */
+// 	while (connected.length) {
+// 		var room = connected.pop();
+// 		var index = this._unconnected.indexOf(room);
+// 		if (index != -1) { 
+// 			this._unconnected.splice(index, 1);
+// 			this._connected.push(room);
+// 		}
+// 	}
+	
+// 	while (todo.length) { /* do actual digging */
+// 		var coords = todo.pop();
+// 		this._boolArray[coords.x][coords.y] = false;
+// 	}
+// }
+
+// /**
+//  * Returns a list of rooms which have this wall
+//  */
+// RPG.Generators.Uniform.prototype._roomsWithWall = function(coords) {
+// 	var result = [];
+// 	for (var i=0;i<this._rooms.length;i++) {
+// 		var room = this._rooms[i];
+// 		var ok = false;
+// 		var c1 = room.getCorner1();
+// 		var c2 = room.getCorner2();
+		
+// 		if ( /* one of vertical walls */
+// 			(coords.x+1 == c1.x || coords.x-1 == c2.x) 
+// 			&& coords.y+1 >= c1.y 
+// 			&& coords.y-1 <= c2.y
+// 		) { ok = true; }
+		
+// 		if ( /* one of horizontal walls */
+// 			(coords.y+1 == c1.y || coords.y-1 == c2.y) 
+// 			&& coords.x+1 >= c1.x 
+// 			&& coords.x-1 <= c2.x
+// 		) { ok = true; }
+
+// 		if (ok) { result.push(room); }		
+// 	}
+// 	return result;
+// }
+
+
+
+
+
+// RPG.Generators.BaseGenerator.prototype.init = function() {
+// 	this._defOptions = {
+// 		ctor: RPG.Map.Dungeon
+// 	}
+// 	this._size = null;
+
+// 	/* there are initialized by _blankMap */
+// 	this._dug = 0;
+// 	this._boolArray = null;
+// 	this._rooms = [];
+// }
+
+// RPG.Generators.BaseGenerator.prototype.generate = function(id, size, danger, options) {
+// 	this._options = {};
+// 	for (var p in this._defOptions) { this._options[p] = this._defOptions[p]; }
+// 	for (var p in options) { this._options[p] = options[p]; }
+
+// 	this._size = size;
+// 	this._blankMap();
+// }
+
+// RPG.Generators.BaseGenerator.prototype._convertToMap = function(id, danger) {
+// 	var map = new this._options.ctor(id, this._size, danger);
+// 	map.fromBoolArray(this._boolArray);
+	
+// 	while (this._rooms.length) { map.addRoom(this._rooms.shift()); }
+// 	this._boolArray = null;
+// 	return map;
+// }
+
+// RPG.Generators.BaseGenerator.prototype._isValid = function(coords) {
+// 	if (coords.x < 0 || coords.y < 0) { return false; }
+// 	if (coords.x >= this._size.x || coords.y >= this._size.y) { return false; }
+// 	return true;
+// }
+
+// /**
+//  * Return number of free neighbors
+//  */
+// RPG.Generators.BaseGenerator.prototype._freeNeighbors = function(center) {
+// 	var result = 0;
+// 	for (var i=-1;i<=1;i++) {
+// 		for (var j=-1;j<=1;j++) {
+// 			if (!i && !j) { continue; }
+// 			var coords = new RPG.Misc.Coords(i, j).plus(center);
+// 			if (!this._isValid(coords)) { continue; }
+// 			if (!this._boolArray[coords.x][coords.y]) { result++; }
+// 		}
+// 	}
+// 	return result;
+// }
+
+// RPG.Generators.BaseGenerator.prototype._blankMap = function() {
+// 	this._rooms = [];
+// 	this._boolArray = [];
+// 	this._dug = 0;
+	
+// 	for (var i=0;i<this._size.x;i++) {
+// 		this._boolArray.push([]);
+// 		for (var j=0;j<this._size.y;j++) { this._boolArray[i].push(true); }
+// 	}
+// }
+
+// RPG.Generators.BaseGenerator.prototype._digRoom = function(corner1, corner2) {
+// 	var room = new RPG.Areas.Room(corner1, corner2);
+// 	this._rooms.push(room);
+	
+// 	for (var i=corner1.x;i<=corner2.x;i++) {
+// 		for (var j=corner1.y;j<=corner2.y;j++) {
+// 			this._boolArray[i][j] = false;
+// 		}
+// 	}
+	
+// 	this._dug += (corner2.x-corner1.x) * (corner2.y-corner1.y);
+// 	return room;
+// }
+
+// /**
+//  * Randomly picked coords. Can represent top-left corner of a room minSize*minSize
+//  * @param {int} minSize
+//  */
+// RPG.Generators.BaseGenerator.prototype._generateCoords = function(minSize) {
+// 	var padding = 2 + minSize - 1;
+// 	var x = Math.floor(Math.random()*(this._size.x-padding)) + 1;
+// 	var y = Math.floor(Math.random()*(this._size.y-padding)) + 1;
+// 	return new RPG.Misc.Coords(x, y);
+// }
+
+// /**
+//  * Randomly picked bottom-right corner
+//  * @param {RPG.Misc.Coords} corner top-left corner
+//  * @param {int} minSize
+//  * @param {int} maxWidth
+//  * @param {int} maxHeight
+//  */
+// RPG.Generators.BaseGenerator.prototype._generateSecondCorner = function(corner, minSize, maxWidth, maxHeight) {
+// 	var availX = this._size.x - corner.x - minSize;
+// 	var availY = this._size.y - corner.y - minSize;
+	
+// 	availX = Math.min(availX, maxWidth - minSize + 1);
+// 	availY = Math.min(availY, maxHeight - minSize + 1);
+	
+// 	var width = Math.floor(Math.random()*availX) + minSize;
+// 	var height = Math.floor(Math.random()*availY) + minSize;
+// 	return new RPG.Misc.Coords(corner.x + width - 1, corner.y + height - 1);
+// }
+
+// /**
+//  * Can a given rectangle fit in a map?
+//  */
+// RPG.Generators.BaseGenerator.prototype._freeSpace = function(corner1, corner2) {
+// 	var c = new RPG.Misc.Coords(0, 0);
+// 	for (var i=corner1.x; i<=corner2.x; i++) {
+// 		for (var j=corner1.y; j<=corner2.y; j++) {
+// 			c.x = i;
+// 			c.y = j;
+// 			if (!this._isValid(c)) { return false; }
+// 			if (!this._boolArray[i][j]) { return false; }
+// 		}
+// 	}
+// 	return true;
+// }
+
+
+
 
 	return ft.MapGen;
 });

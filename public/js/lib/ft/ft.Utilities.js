@@ -128,13 +128,68 @@ define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
 	  	return count;
 	  }
 
+	  /**
+     * Pub/sub storage object
+     * @type {object}
+     *
+     * @author  "Cowboy" Ben Alman
+     *
+     * {@link https://gist.github.com/cowboy/661855}
+     */
+    var _o = $({});
+
+    /**
+     * Pub/sub subscribe.
+     * 
+     * @param {string} topic The topic to subscribe to.
+     * @param {Function} handle The function to execute when topic is published to.
+     *
+     * @author  "Cowboy" Ben Alman
+     *
+     * {@link https://gist.github.com/cowboy/661855}
+     */
+    function _subscribe() {
+      _o.on.apply(_o, arguments);
+    }
+
+    /**
+     * Pub/sub unsubscribe.
+     * 
+     * @param {string} topic The topic to unsubscribe from.
+     * @param {Function} handle Optional. The function to unsubscribe. If undefined, all handlers for the specified topic are unsubscribed.
+     *
+     * @author  "Cowboy" Ben Alman
+     *
+     * {@link https://gist.github.com/cowboy/661855}
+     */
+    function _unsubscribe() {
+      _o.off.apply(_o, arguments);
+    }
+
+    /**
+     * Pub/sub publish
+     * 
+     * @param {string} topic The topic to publish to.
+     * @param {Array} data The data to publish. Can be array of values or single value.
+     *
+     * @author  "Cowboy" Ben Alman
+     *
+     * {@link https://gist.github.com/cowboy/661855}
+     */
+    function _publish() {
+      _o.trigger.apply(_o, arguments);
+    }
+
 		return {
 			ajaxGet: _ajaxGet,
 			showLoader: _showLoader,
 			hideLoader: _hideLoader,
 			handleDropDown: _handleDropDown,
 			getRandomNum: _getRandomNum,
-			sumObjectValues: _sumObjectValues
+			sumObjectValues: _sumObjectValues,
+			subscribe: _subscribe,
+			unsubscribe: _unsubscribe,
+			publish: _publish
 		};
 	})();
 });

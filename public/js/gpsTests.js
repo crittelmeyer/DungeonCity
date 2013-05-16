@@ -1,4 +1,5 @@
 requirejs.config({
+  "waitSeconds": 120,
   "baseUrl": "js/lib",
   "paths": {
     "app": "../app",
@@ -10,12 +11,12 @@ requirejs.config({
   }
 });
 
-require(["jquery", "Mustache", "app/dc.DungeonCity"], function($, Mustache, dc_DungeonCity) {
+require(["jquery", "Mustache", "app/dc.GPSTests", 'async!http://maps.google.com/maps/api/js?sensor=false'], function($, Mustache, GPSTests) {
   //This function will be called when all the dependencies
   //listed above are loaded. Note that this function could
   //be called before the page is loaded.
   //This callback is optional.
   $(function() {
-    dc_DungeonCity.init();
+    GPSTests.init();
   });
 });

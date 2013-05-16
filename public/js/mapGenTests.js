@@ -10,12 +10,12 @@ requirejs.config({
   }
 });
 
-require(["jquery", "Mustache", "app/dc.DungeonCity"], function($, Mustache, dc_DungeonCity) {
+require(["jquery", "Mustache", "app/dc.MapGenTests"], function($, Mustache, MapGenTests) {
   //This function will be called when all the dependencies
   //listed above are loaded. Note that this function could
   //be called before the page is loaded.
   //This callback is optional.
   $(function() {
-    dc_DungeonCity.init();
+    MapGenTests.init();
   });
 });

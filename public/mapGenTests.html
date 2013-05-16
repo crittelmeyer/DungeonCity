@@ -1,0 +1,63 @@
+<html>
+	<head>
+		<title>Map Generator Tests</title>
+
+		<link rel="stylesheet" href="css/dungeon_city.css"/>
+	</head>
+	<body>
+		<div class="container-fluid">
+			<div class="row-fluid">
+				<div class="span12">
+					<div id="canvas"></div>
+				</div>
+			</div>
+
+			<div class="row-fluid">
+				<div class="span12">
+					<form>
+						<fieldset>
+							<div id="select_map_type" class="btn-group">
+							  <a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:void(1)">
+							    Simple Digger
+									<span class="caret"></span>
+							  </a>
+							  <ul class="dropdown-menu">
+							    <li><a href="javascript:void(1)">Simple Digger</a></li>
+							    <li><a href="javascript:void(1)">Cellular Automata</a></li>
+							  </ul>
+							</div>
+
+							<div id="simple_digger_options" class="map_type_options">
+								<input class="digger_moves input-small" value="3000" placeholder="# of Moves"/>
+								<input class="max_diggers input-small" value="3" placeholder="Max Diggers"/>
+								<input class="spawn_chance input-small" value="12" placeholder="Spawn Chance %"/>
+								<div class="select_tendency btn-group">
+								  <a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:void(1)">
+								    Random
+										<span class="caret"></span>
+								  </a>
+								  <ul class="dropdown-menu">
+								    <li><a href="javascript:void(1)">Random</a></li>
+								    <li><a href="javascript:void(1)">NE</a></li>
+								    <li><a href="javascript:void(1)">SE</a></li>
+								    <li><a href="javascript:void(1)">SW</a></li>
+								    <li><a href="javascript:void(1)">NW</a></li>
+								    <li><a href="javascript:void(1)">Same Direction</a></li>
+								  </ul>
+								</div>
+							</div>
+
+							<div id="cellular_automata_options" class="map_type_options" style="display: none;">
+								<input class="generations input-small" value="5" placeholder="# of Generations"/>
+							</div>
+
+							<a href="javascript:void(1)" id="refresh_map" class="btn btn-primary">Refresh</a>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<script data-main="js/mapGenTests" src="js/lib/require.min.js"></script>
+	</body>
+</html>
