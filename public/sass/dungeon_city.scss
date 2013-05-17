@@ -12,6 +12,10 @@ body {
   float: left;
   min-height: 400px;
   min-width: 650px;
+
+  img {
+    max-width: none;
+  }
 }
 
 .map_type_options {

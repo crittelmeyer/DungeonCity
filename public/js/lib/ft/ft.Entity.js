@@ -48,11 +48,9 @@ define(["jquery", "Mustache"], function($, Mustache) {
 
 			var offsetX = ft.MapGen.dx[dir];
 			var offsetY = ft.MapGen.dy[dir];
-console.log(offsetX + ',' + offsetY);
-console.log(player.pos.x + ',' + player.pos.y);
+
 			player.pos.y += offsetX;
 			player.pos.x += offsetY;
-			console.log(player.pos.x + ',' + player.pos.y);
 
 			_draw(map, player);
 		}
