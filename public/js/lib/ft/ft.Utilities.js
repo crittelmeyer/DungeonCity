@@ -6,7 +6,7 @@
 var ft = ft || {};
 
 
-define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
+define(["jquery", "Mustache", "Modernizr", "bootstrap"], function($, Mustache, Modernizr) {
 	var s;
 
 	/**
