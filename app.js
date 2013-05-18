@@ -4,12 +4,12 @@
 
 var express = require('express')
   , routes = require('./routes')
+  , dungeon = require('./routes/dungeon')
   , http = require('http')
   , path = require('path')
-  , io = require('socket.io')
-  , mongoose = require('mongoose');
-
-
+  // , io = require('socket.io')
+  , mongoose = require('mongoose')
+  , db = mongoose.createConnection('localhost', 'dungeonCity');
 
 var app = express();
 
@@ -30,18 +30,19 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
+app.get('/dungeon', dungeon.get);
 
 var server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
 
 
-var sio = io.listen(server);
-sio.set('log level', 0);
+// var sio = io.listen(server);
+// sio.set('log level', 0);
 
-sio.sockets.on('connection', function (socket) {
-  socket.emit('newConnection', { msg: 'new connection!' });
-  // socket.on('my other event', function (data) {
-  //   console.log(data);
-  // });
-});
+// sio.sockets.on('connection', function (socket) {
+//   socket.emit('newConnection', { msg: 'new connection!' });
+//   // socket.on('my other event', function (data) {
+//   //   console.log(data);
+//   // });
+// });
