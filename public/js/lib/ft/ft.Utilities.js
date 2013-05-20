@@ -6,9 +6,7 @@
 var ft = ft || {};
 
 
-define(["jquery", "Mustache", "Modernizr", "bootstrap"], function($, Mustache, Modernizr) {
-	var s;
-
+define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
 	/**
 	 * Holds all of our dungeon generation code & returns the exposed public API
 	 * 
@@ -42,69 +40,44 @@ define(["jquery", "Mustache", "Modernizr", "bootstrap"], function($, Mustache, M
 	    });
 	  }
 
-	  /**
-	   * Shows the loading spinner.
-	   *
-	   * @author  Chris Rittelmeyer
-	   */
-	  function _showLoader($container) {
-	    if ($container == null) $container = $('body');
+     /**
+     * Retrieves the value of a specified parameter from the current page's URL.
+     * 
+     * @param  {string} name Parameter name to retrieve a value for.
+     * 
+     * @return {string}      Value of the requested parameter.
+     *
+     * @author  Chris Rittelmeyer
+     */
+    function _getParameterByName(name) {
+      name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+      var regexS = "[\\?&]" + name + "=([^&#]*)";
+      var regex = new RegExp(regexS);
+      var results = regex.exec(window.location.search);
+      if(results == null)
+        return "";
+      else
+        return decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
 
-	    this.ajaxGet('templates/spinner.mustache', function(template) {
-	      var htmlString = Mustache.to_html(template, {});
+    /**
+     * Removes the key/value pair of the specified parameter from the specified URL.
+     * 
+     * @param  {string} url       URL to parse.
+     * @param  {string} parameter Parameter name to remove.
+     * 
+     * @return {string}           URL with specified parameter key/value pair removed.
+     *
+     * @author  Chris Rittelmeyer
+     */
+    function _removeParameterByName(url, parameter) {
+      if (typeof parameter == "undefined" || parameter == null || parameter == "") throw new Error( "parameter is required" );
 
-	      $container.append(htmlString);
-	      $container.find('.spinner').show();
-	      $container.css({
-	        opacity: "0.5",
-	        position: "relative"
-	      });
-	    });
-	  }
+      url = url.replace(new RegExp("\\b" + parameter + "=[^&;]+[&;]?", "gi"), "");
 
-	  /**
-	   * Hides the loading spinner.
-	   *
-	   * @author  Chris Rittelmeyer
-	   */
-	  function _hideLoader($container) {
-	    if ($container == null) $container = $('body');
-
-	    $container.find('.spinner').hide();
-	    $container.css({
-	      opacity: "",
-	      position: ""
-	    });
-	    $container.removeAttr('style');
-	  }
-
-	  /**
-	   * Adds standard behavior to a specified Twitter Bootstrap style drop-down.<br>
-	   * --Changes display text & value of drop-down when selection is made, then:<br>
-	   * --Executes callback, if provided.
-	   * 
-	   * @param  {jQuery_object}   $parent       Parent of the drop-down.
-	   * @param  {string}   list_item     CSS selector string of all of the drop-down's list items.
-	   * @param  {string}   action_button CSS selector string of the drop-down's action button.
-	   * @param  {boolean}   addCaret      If true, caret is appended after newly selected text.
-	   * @param  {Function} callback A function to execute each time a new selection is made.
-	   *
-	   * @author  Chris Rittelmeyer
-	   */
-	  function _handleDropDown($parent, list_item, action_button, addCaret, callback) {
-	    if (typeof addCaret == "undefined") addCaret = true;
-	    var $list_item = $parent.find(list_item), $action_button = $parent.find(action_button);
-
-	    $list_item.on('click', function() {
-	      //set text & value of new selection
-	      var newText = $(this).text().trim();
-	      $action_button.text(newText);
-	      if (addCaret) $action_button.append(' <span class="caret"></span>');
-	      $action_button.val(newText);
-
-	      if (callback) callback.call(this, newText);
-	    });
-	  }
+      // remove any leftover crud & return
+      return url.replace(/[&;]$/, "");
+    }
 
 	  function _getRandomNum(max) {
 	  	return Math.floor(Math.random() * max);
@@ -182,9 +155,6 @@ define(["jquery", "Mustache", "Modernizr", "bootstrap"], function($, Mustache, M
 
 		return {
 			ajaxGet: _ajaxGet,
-			showLoader: _showLoader,
-			hideLoader: _hideLoader,
-			handleDropDown: _handleDropDown,
 			getRandomNum: _getRandomNum,
 			sumObjectValues: _sumObjectValues,
 			subscribe: _subscribe,

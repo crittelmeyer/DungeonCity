@@ -25,8 +25,23 @@ define(["jquery", "Mustache"], function($, Mustache) {
 
 		}
 
+		function _addInfoWindow(map, marker, message, callback) {
+	    var info = message;
+
+	    var infoWindow = new google.maps.InfoWindow({
+        content: message
+	    });
+
+	    google.maps.event.addListener(marker, 'click', function () {
+        infoWindow.open(map, marker);
+
+        if (callback) callback.call();
+	    });
+    }
+
 		return {
-			init: _init
+			init: _init,
+			addInfoWindow: _addInfoWindow
 		};
 	})();
 

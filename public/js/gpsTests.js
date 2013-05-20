@@ -12,7 +12,7 @@ requirejs.config({
   }
 });
 
-require(["jquery", "Mustache", "Modernizr", "app/dc.GPSTests", 'async!http://maps.google.com/maps/api/js?sensor=false'], function($, Mustache, Modernizr, GPSTests) {
+require(["jquery", "Mustache", "Modernizr", "app/dc.GPSTests", 'async!http://maps.google.com/maps/api/js?sensor=true'], function($, Mustache, Modernizr, GPSTests) {
   //This function will be called when all the dependencies
   //listed above are loaded. Note that this function could
   //be called before the page is loaded.

@@ -5,7 +5,7 @@
  */
 var ft = ft || {};
 
-define(["jquery", "ft/ft.MapGen", "ft/ft.Entity", "ft/ft.Utilities"], function($) {
+define(["jquery", "ft/ft.MapGen", "ft/ft.Entity", "ft/ft.Utilities", "ft/ft.UI"], function($) {
 	var s, els;
 
 	ft.Game = (function() {
@@ -21,7 +21,7 @@ define(["jquery", "ft/ft.MapGen", "ft/ft.Entity", "ft/ft.Utilities"], function($
 
 			els.$canvas = $canvas;
 
-			ft.Utilities.showLoader(els.$canvas);
+			ft.UI.showLoader(els.$canvas);
 
 			_initMap(function() {
 				_initPlayer();
@@ -78,7 +78,7 @@ define(["jquery", "ft/ft.MapGen", "ft/ft.Entity", "ft/ft.Utilities"], function($
 				_drawMap();
 			});
 
-			ft.Utilities.hideLoader(els.$canvas);
+			ft.UI.hideLoader(els.$canvas);
 		}
 
 		function _getRandomBlankLocation() {
