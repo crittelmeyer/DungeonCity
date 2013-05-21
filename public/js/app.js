@@ -10,7 +10,7 @@ requirejs.config({
   }
 });
 
-require(["jquery", "Mustache", "app/dc.DungeonCity"], function($, Mustache, dc_DungeonCity) {
+require(["jquery", "app/dc.DungeonCity"], function($, dc_DungeonCity) {
   //This function will be called when all the dependencies
   //listed above are loaded. Note that this function could
   //be called before the page is loaded.

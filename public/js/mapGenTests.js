@@ -10,7 +10,7 @@ requirejs.config({
   }
 });
 
-require(["jquery", "Mustache", "app/dc.MapGenTests"], function($, Mustache, MapGenTests) {
+require(["jquery", "Mustache", "app/tests/dc.MapGenTests"], function($, Mustache, MapGenTests) {
   //This function will be called when all the dependencies
   //listed above are loaded. Note that this function could
   //be called before the page is loaded.

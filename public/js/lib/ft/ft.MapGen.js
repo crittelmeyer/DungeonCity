@@ -6,7 +6,7 @@
 var ft = ft || {};
 
 
-define(["jquery", "Mustache"], function($, Mustache) {
+define(["jquery", "Mustache", "ft/ft.Utilities"], function($, Mustache) {
 	var s;
 
 	/**

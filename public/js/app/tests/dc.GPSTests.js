@@ -26,7 +26,7 @@ define(["jquery", "Mustache", "Modernizr", "jquery.mousewheel", "ft/ft.Utilities
 				97: 'W'
 			},
 			elems: {
-				$canvas: $('#canvas')
+				$canvas: $('#game_wrapper')
 			}
 		};
 
