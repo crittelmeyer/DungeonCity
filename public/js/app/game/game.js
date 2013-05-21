@@ -20,7 +20,7 @@ define([
     // MotionControlSystem,
     // MovementSystem,
     // CollisionSystem,
-    GMapsRenderSystem,
+    TileMapRenderSystem,
     SystemPriorities,
     EntityCreator,
     Engine,
@@ -47,12 +47,11 @@ define([
           new GameManager(_gameState, creator),
           SystemPriorities.update
         );
-        
 
-        // _engine.addSystem(
-        //   new TileMapRenderSystem($mapWrapper),
-        //   SystemPriorities.render
-        // );
+        _engine.addSystem(
+          new TileMapRenderSystem($mapWrapper),
+          SystemPriorities.render
+        );
 
         // _tickProvider = new TickProvider();
       }

@@ -24,6 +24,9 @@ define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
 	   * @author  Chris Rittelmeyer
 	   */
 	  function _ajaxGet(url, success, error) {
+	  	var dataType = "test";
+	  	if (url.indexOf('.js') > -1) dataType = "script";
+
 	    if (error == null) {
 	      error = function(a, b, c) {
 	        console.log('error: ');
@@ -34,7 +37,7 @@ define(["jquery", "Mustache", "bootstrap"], function($, Mustache) {
 	    $.ajax({
 	      type: "GET",
 	      url: url,
-	      dataType: "text",
+	      dataType: dataType,
 	      success: success,
 	      error: error
 	    });

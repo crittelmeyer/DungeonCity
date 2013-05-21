@@ -3,9 +3,8 @@ define ([
 	"app/game/nodes/playerCollision",
 	"app/game/nodes/monsterCollision",
   "app/game/nodes/projectileCollision",
-  "app/game/nodes/tileMapRender",
   "ft/ft.MapGen"
-	], function(System, PlayerCollisionNode, MonsterCollisionNode, ProjectileCollisionNode, TileMapRender) {
+	], function(System, PlayerCollisionNode, MonsterCollisionNode, ProjectileCollisionNode) {
 		function GameManager(gameState, creator) {
 			Object.extend(GameManager.prototype, System.prototype);
 			this.init(gameState, creator);
@@ -79,26 +78,13 @@ define ([
 			if (this.players.empty()) {
 				if (this.gameState.lives > 0) {
 
-					this.creator.createPlayer(_getRandomBlankLocation());
+					this.creator.createPlayer({x: 10, y: 10});
 				}
 			} else {
 				console.log('game over');
 				// game over
 			}
 		};
-
-		function _getRandomBlankLocation() {
-			var rand1 = ft.Utilities.getRandomNum(TileMapRender.tileMap.length);
-			var rand2 = ft.Utilities.getRandomNum(TileMapRender.tileMap[rand1].length);
-			if ([',','.'](TileMapRender.tileMap[rand1][rand2].tile) > -1) {
-				return {
-					x: rand1,
-					y: rand2
-				};
-			} else {
-				return _getRandomBlankLocation();
-			}
-		}
 
 		return GameManager;
 	}
