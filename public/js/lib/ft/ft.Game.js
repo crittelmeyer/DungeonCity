@@ -36,7 +36,7 @@ define(["jquery", "ft/ft.MapGen", "ft/ft.Entity", "ft/ft.Utilities", "ft/ft.UI"]
 		    	height: s.mapHeight
 		    }, function(map) {
 					s.map = map;
-					console.log(s.map);
+
 					_drawMap();
 
 					if (callback) callback.call();
